@@ -2,12 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kotlin JS Hello World Demo</title>
+    <title>Kotlin Vue Demo</title>
 </head>
 <body>
 
+<div id="hello">
+    <div>{{ name }}</div>
+    <hello-component></hello-component>
+    <hello-component></hello-component>
+</div>
+
+<script type="text/javascript" src="./node_modules/_vue@2.5.16@vue/dist/vue.js"></script>
 <script type="text/javascript" src="src/main/resources/lib/kotlin.js"></script>
-<script type="text/javascript" src="build/classes/kotlin/main/kotlin-js-hello-world-demo.js"></script>
+<script type="text/javascript" src="./build/classes/kotlin/main/kotlin-vue-demo.js"></script>
 
 </body>
 </html>
