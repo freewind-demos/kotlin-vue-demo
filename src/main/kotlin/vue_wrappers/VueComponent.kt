@@ -13,13 +13,11 @@ package vue_wrappers
 //}
 
 @JsName("Vue")
-external class Vue(options: dynamic)
-
-@JsName("Vue")
-external object MyVueComponent {
-    fun component(name: String, options: dynamic)
+external class Vue(options: dynamic) {
+    companion object {
+        fun component(name: String, options: dynamic)
+    }
 }
-
 
 inline fun <T> jsObj(): T = js("{}")
 
@@ -38,10 +36,20 @@ external interface VueComponent<DATA, METHODS> {
     var methods: METHODS
 }
 
-fun <DATA, METHODS> VueComponent<DATA, METHODS>.defineMethods(block: METHODS.(() -> DATA) -> Unit): METHODS {
+inline fun <DATA, METHODS> VueComponent<DATA, METHODS>.self(): DATA = thisAs()
+
+fun <DATA, METHODS> VueComponent<DATA, METHODS>.defineMethods(block: METHODS.() -> Unit): METHODS {
     val methods = jsObj<METHODS>()
-    block(methods, ::thisAs)
+    block(methods)
     return methods
+}
+
+fun <DATA, METHODS> VueComponent<DATA, METHODS>.defineData(block: DATA.() -> Unit): () -> DATA {
+    return {
+        val data = jsObj<DATA>()
+        block(data)
+        data
+    }
 }
 
 external interface MyComponent : VueComponent<MyComponent.Data, MyComponent.Methods> {
@@ -56,23 +64,22 @@ external interface MyComponent : VueComponent<MyComponent.Data, MyComponent.Meth
 
 }
 
+fun myComponent() = builder<MyComponent> {
+    this.name = "hello-component"
+    this.template = """<ul><li>Hello, {{username}} <button @click="changeName">Change</button></li></ul>"""
+    this.data = defineData {
+        this.username = "Freewind"
+    }
+    this.methods = defineMethods {
+        this.changeName = {
+            self().username += "!"
+        }
+    }
+}
+
 
 fun main(args: Array<String>) {
-    MyVueComponent.component("hello-component", builder<MyComponent> {
-        this.name = "hello-component"
-        this.data = {
-            jsObj<MyComponent.Data>().apply {
-                this.username = "Freewind"
-            }
-        }
-        this.methods = defineMethods { data ->
-            this.changeName = {
-                //  data().username += "!" // This doesn't work
-                thisAs<MyComponent.Data>().username += "!"
-            }
-        }
-        this.template = """<ul><li>Hello, {{username}} <button @click="changeName">Change</button></li></ul>"""
-    })
+    Vue.component("hello-component", myComponent())
 
     Vue(object {
         val el = "#hello"
